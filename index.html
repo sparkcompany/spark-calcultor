@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced & Simple Calculator</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center; /* Center content horizontally */
+            align-items: center; /* Center content vertically */
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main Wrapper for Ads and Calculator */
+        .main-content-wrapper {
+            display: flex;
+            flex-direction: column; /* Stack items (ads, calculator) vertically */
+            align-items: center; /* Center items (ads, calculator) horizontally within this wrapper */
+            gap: 20px; /* Space between the ads and the calculator */
+            width: 100%; /* Take full available width */
+            max-width: 480px; /* Limit the overall width for better aesthetics */
+            padding: 10px; /* Some padding around the entire content */
+            box-sizing: border-box;
+        }
+
+        /* Ad Container Styling */
+        .ad-container {
+            width: 100%; /* Take full width of parent (main-content-wrapper) */
+            max-width: 468px; /* Ad's preferred width (your ad is 468px) */
+            min-height: 60px; /* Ad's preferred height (your ad is 60px), reserves space */
+            background-color: #f0f0f0; /* Placeholder background */
+            border: 1px dashed #ccc; /* Visual border for ad space */
+            display: flex; /* Use flex to center the ad content if it's smaller than max-width */
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Crucial: Hides any overflowing content if ad is larger than screen */
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        /* Calculator Container */
+        .calculator {
+            background-color: #333; /* Dark background for calculator */
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 0 5px rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            width: 100%; /* Make calculator take full width of its parent (.main-content-wrapper) */
+            max-width: 380px; /* Increased max-width for more buttons (if main-content-wrapper allows) */
+            box-sizing: border-box;
+            border: 2px solid #555;
+        }
+
+        /* Display Area */
+        .display {
+            width: 100%;
+            height: 70px;
+            background-color: #222;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            font-size: 2.5em;
+            color: #eee;
+            text-align: right;
+            box-sizing: border-box;
+            overflow: hidden; /* Hide overflow text */
+            white-space: nowrap; /* Prevent text wrapping */
+            text-overflow: ellipsis; /* Add ellipsis for overflow */
+            caret-color: transparent; /* Hide text input caret */
+        }
+
+        /* Buttons Grid */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px; /* Increased gap */
+        }
+
+        /* Individual Button Styling */
+        .buttons button {
+            width: 100%;
+            height: 65px; /* Slightly taller buttons */
+            border: none;
+            border-radius: 10px; /* More rounded corners */
+            font-size: 1.8em; /* Larger font for readability */
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: #eee;
+        }
+
+        /* Number Buttons */
+        .buttons button.number {
+            background-color: #555;
+        }
+        .buttons button.number:hover {
+            background-color: #666;
+            transform: translateY(-2px);
+        }
+        .buttons button.number:active {
+            background-color: #444;
+            transform: translateY(0);
+        }
+
+        /* Operator Buttons */
+        .buttons button.operator {
+            background-color: #f79d1a; /* Orange */
+            color: #fff;
+        }
+        .buttons button.operator:hover {
+            background-color: #e08b15;
+            transform: translateY(-2px);
+        }
+        .buttons button.operator:active {
+            background-color: #c77a12;
+            transform: translateY(0);
+        }
+
+        /* Special Function Buttons (AC, DEL, %, etc.) */
+        .buttons button.function {
+            background-color: #888; /* Light gray */
+            color: #eee;
+        }
+        .buttons button.function:hover {
+            background-color: #999;
+            transform: translateY(-2px);
+        }
+        .buttons button.function:active {
+            background-color: #777;
+            transform: translateY(0);
+        }
+
+        /* Equals Button */
+        .buttons button.equals {
+            background-color: #4CAF50; /* Green */
+            color: #fff;
+        }
+        .buttons button.equals:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .buttons button.equals:active {
+            background-color: #3e8e41;
+            transform: translateY(0);
+        }
+
+        /* Span 2 columns */
+        .buttons button[data-value="0"] {
+            grid-column: span 2;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .main-content-wrapper {
+                padding: 10px;
+                gap: 15px; /* Reduce gap on smaller screens */
+            }
+            .calculator {
+                padding: 15px;
+                /* max-width is handled by .main-content-wrapper now */
+            }
+            .display {
+                height: 60px;
+                font-size: 2em;
+                margin-bottom: 15px;
+            }
+            .buttons {
+                gap: 8px;
+            }
+            .buttons button {
+                height: 55px;
+                font-size: 1.5em;
+            }
+            .ad-container {
+                min-height: 50px; /* Slightly reduce placeholder height on smaller screens */
+                /* You could hide ads completely on very small screens if they don't scale well: */
+                /* display: none; */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-content-wrapper">
+        <!-- Ad above the calculator -->
+        <div class="ad-container top-ad">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '21c654a8d40072a48af8e61c8cb432d9',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/21c654a8d40072a48af8e61c8cb432d9/invoke.js"></script>
+        </div>
+
+        <div class="calculator">
+            <input type="text" class="display" readonly value="0">
+            <div class="buttons">
+                <!-- Function Buttons -->
+                <button class="function" data-value="AC">AC</button>
+                <button class="function" data-value="DEL">DEL</button>
+                <button class="function" data-value="%">%</button>
+                <button class="operator" data-value="÷">÷</button>
+
+                <!-- Number and Operator Buttons -->
+                <button class="number" data-value="7">7</button>
+                <button class="number" data-value="8">8</button>
+                <button class="number" data-value="9">9</button>
+                <button class="operator" data-value="×">×</button>
+
+                <button class="number" data-value="4">4</button>
+                <button class="number" data-value="5">5</button>
+                <button class="number" data-value="6">6</button>
+                <button class="operator" data-value="-">-</button>
+
+                <button class="number" data-value="1">1</button>
+                <button class="number" data-value="2">2</button>
+                <button class="number" data-value="3">3</button>
+                <button class="operator" data-value="+">+</button>
+
+                <!-- Advanced Function Buttons -->
+                <button class="function" data-value="^">x<sup>y</sup></button>
+                <button class="function" data-value="√">√</button>
+                <button class="function" data-value="(">(</button>
+                <button class="function" data-value=")">)</button>
+
+                <!-- Pi, Sign Toggle, Decimal, Zero, Equals -->
+                <button class="function" data-value="π">π</button>
+                <button class="function" data-value="+/-">+/-</button>
+                <button class="number" data-value="0">0</button>
+                <button class="number" data-value=".">.</button>
+                <button class="equals" data-value="=">=</button>
+            </div>
+        </div>
+
+        <!-- Ad below the calculator -->
+        <div class="ad-container bottom-ad">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '21c654a8d40072a48af8e61c8cb432d9',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/21c654a8d40072a48af8e61c8cb432d9/invoke.js"></script>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = "0"; // Represents the full expression
+        let resultDisplayed = false; // Flag to indicate if the current display is a result
+
+        const display = document.querySelector(".display");
+        const buttons = document.querySelector(".buttons");
+
+        // Update display with currentInput
+        function updateDisplay() {
+            display.value = currentInput;
+        }
+
+        // Handle button clicks using event delegation
+        buttons.addEventListener("click", (e) => {
+            const button = e.target;
+            if (!button.matches("button")) return; // Ensure it's a button click
+
+            const value = button.dataset.value; // Get the data-value attribute
+
+            if (!value) return; // Ignore clicks on non-button areas or buttons without data-value
+
+            // If a result is displayed and a new number or operator is pressed, clear or append.
+            if (resultDisplayed) {
+                if ("0123456789.".includes(value) || value === '(' || value === 'π' || value === '√') {
+                    currentInput = value === 'π' ? String(Math.PI) : (value === '√' ? '' : value); // Start new input
+                    if (value === '√') currentInput = 'Math.sqrt('; // If √ is pressed, prepare for function
+                    resultDisplayed = false;
+                } else if (value === '+' || value === '-' || value === '×' || value === '÷' || value === '^') {
+                    // Continue calculation with the previous result
+                    currentInput += value;
+                    resultDisplayed = false;
+                }
+                // For other special buttons like AC, DEL, =, etc., they handle reset or calculation.
+            }
+
+            switch (value) {
+                case "AC":
+                    currentInput = "0";
+                    resultDisplayed = false;
+                    break;
+                case "DEL":
+                    if (currentInput.length === 1 || currentInput === "Error") {
+                        currentInput = "0";
+                    } else if (currentInput.startsWith("Math.sqrt(")) {
+                        currentInput = currentInput.slice(0, -1);
+                        if (currentInput === "Math.sqrt") currentInput = "0"; // If only "Math.sqrt" remains
+                    }
+                    else {
+                        currentInput = currentInput.slice(0, -1);
+                    }
+                    resultDisplayed = false;
+                    break;
+                case "=":
+                    try {
+                        let expression = currentInput;
+                        expression = expression.replace(/π/g, 'Math.PI'); // Replace pi symbol
+                        expression = expression.replace(/×/g, '*');     // Replace multiplication symbol
+                        expression = expression.replace(/÷/g, '/');     // Replace division symbol
+                        expression = expression.replace(/\^/g, '**');    // Replace ^ with ** for power
+
+                        // Basic validation for incomplete expressions before eval
+                        if (expression.trim() === '' || /[+\-*/.^]$/.test(expression)) {
+                            throw new Error("Syntax Error");
+                        }
+                        // Handle multiple decimals in one number (e.g. 5.2.3)
+                        if (/\d+\.\d*\./.test(expression)) {
+                            throw new Error("Syntax Error");
+                        }
+                         // Handle cases like "()" or empty Math.sqrt()
+                        if (/\(\s*\)/.test(expression) || /Math\.sqrt\(\s*\)/.test(expression)) {
+                            throw new Error("Syntax Error");
+                        }
+
+                        let result = eval(expression);
+
+                        // Handle floating point inaccuracies
+                        if (Number.isFinite(result)) {
+                            // Limit to a reasonable number of decimal places to avoid long floats
+                            result = parseFloat(result.toFixed(12));
+                        }
+
+                        currentInput = result.toString();
+                        resultDisplayed = true;
+                    } catch (e) {
+                        currentInput = "Error";
+                        resultDisplayed = true;
+                    }
+                    break;
+                case "+/-":
+                    // If currentInput is "0" or "Error", do nothing.
+                    if (currentInput === "0" || currentInput === "Error") break;
+
+                    // If it's a direct number or a result, just toggle its sign
+                    if (!isNaN(parseFloat(currentInput)) && currentInput.length === String(parseFloat(currentInput)).length) {
+                        currentInput = (parseFloat(currentInput) * -1).toString();
+                    } else {
+                        // Attempt to negate the last number/parenthesized expression
+                        // This is a simplified approach; true parsing is complex.
+                        // For example, "5+2" -> "5-2"
+                        // Or "5*(-2)"
+                        const lastChar = currentInput.slice(-1);
+                        if (lastChar === '-') {
+                            currentInput = currentInput.slice(0, -1); // Remove trailing minus
+                        } else if (['+', '-', '×', '÷', '^', '('].includes(lastChar) || currentInput === "") {
+                            currentInput += '-'; // Add minus to start a negative number
+                        } else {
+                            // Try to find the last number/group and negate it
+                            // Example: "5+2" -> "5+(-2)" or "5-2"
+                            // Simple approach: if it's not a clear number at the end, just append '-'
+                            currentInput += '-'; // This might create invalid expressions in some cases
+                        }
+                    }
+                    resultDisplayed = false; // Might be a new expression now
+                    break;
+                case "√":
+                    // If currentInput is a valid number or a result, apply sqrt immediately
+                    if (!isNaN(parseFloat(currentInput)) && currentInput !== "") {
+                        let num = parseFloat(currentInput);
+                        if (num >= 0) {
+                            currentInput = Math.sqrt(num).toString();
+                        } else {
+                            currentInput = "Error: Imaginary";
+                        }
+                        resultDisplayed = true;
+                    } else if (currentInput === "0") {
+                        currentInput = 'Math.sqrt('; // Start Math.sqrt( if 0
+                    } else {
+                        currentInput += 'Math.sqrt('; // Append for expression like 5 + Math.sqrt(
+                    }
+                    break;
+                case "%":
+                    // If currentInput is a single number/result, convert to percentage
+                    if (!isNaN(parseFloat(currentInput)) && currentInput !== "") {
+                        currentInput = (parseFloat(currentInput) / 100).toString();
+                        resultDisplayed = true;
+                    } else {
+                        // For expressions like "50 + 10%", needs more complex parsing.
+                        // For simplicity, we just append it and let eval try to handle (which it won't correctly for calculator's % behavior like "X + Y%")
+                        // A more robust implementation would convert "X + Y%" to "X + (X * Y / 100)" before eval.
+                        currentInput += '/100'; // Eval will just treat this as division
+                    }
+                    break;
+                case 'π':
+                    // Append Pi. If currentInput is "0" or result, replace it.
+                    if (currentInput === "0" || resultDisplayed) {
+                         currentInput = String(Math.PI);
+                    } else {
+                        // If appending after a number, add * for implicit multiplication
+                        const lastChar = currentInput.slice(-1);
+                        if (!isNaN(parseFloat(lastChar)) && lastChar !== ')' && lastChar !== 'π') {
+                            currentInput += `*${Math.PI}`;
+                        } else {
+                            currentInput += 'Math.PI'; // Append Math.PI for eval
+                        }
+                    }
+                    resultDisplayed = false;
+                    break;
+                case '(':
+                case ')':
+                    // If currentInput is "0" or result, replace it, unless adding '('
+                    if (currentInput === "0" && value === '(') {
+                        currentInput = value;
+                    } else if (resultDisplayed) {
+                        currentInput = value;
+                    } else {
+                        currentInput += value;
+                    }
+                    resultDisplayed = false;
+                    break;
+                default: // Numbers and operators (including '.', '×', '÷', '+', '-', '^')
+                    if (currentInput === "0" && value !== ".") {
+                        currentInput = value; // Replace leading "0" with first digit (unless it's a decimal)
+                    } else {
+                        // Prevent multiple decimals in one number part
+                        if (value === '.') {
+                            // Find the last number segment
+                            const parts = currentInput.split(/[\+\-\×\÷\^\(\)]/);
+                            const lastPart = parts[parts.length - 1];
+                            if (lastPart.includes('.')) {
+                                return; // Already has a decimal in the current number segment
+                            }
+                        }
+                        currentInput += value;
+                    }
+                    resultDisplayed = false;
+                    break;
+            }
+            updateDisplay();
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
